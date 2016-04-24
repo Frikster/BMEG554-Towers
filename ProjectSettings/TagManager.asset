@@ -12,6 +12,28 @@ TagManager:
   - Small
   - Instructions
   - Block
+  - ThumbBone1_L
+  - IndexBone1_L
+  - MidBone1_L
+  - PinkyBone1_L
+  - RingBone1_L
+  - Palm_L
+  - ThumbBone1_R
+  - IndexBone1_R
+  - MidBone1_R
+  - PinkyBone1_R
+  - RingBone1_R
+  - Palm_R
+  - ThumbBone3_L
+  - IndexBone3_L
+  - MidBone3_L
+  - PinkyBone3_L
+  - RingBone3_L
+  - ThumbBone3_R
+  - IndexBone3_R
+  - MidBone3_R
+  - PinkyBone3_R
+  - RingBone3_R
   layers:
   - Default
   - TransparentFX
@@ -21,8 +43,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - Player
+  - Trigger
   - 
   - 
   - 
@@ -48,4 +70,7 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Player
+    uniqueID: 1437423551
     locked: 0

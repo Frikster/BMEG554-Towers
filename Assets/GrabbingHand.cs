@@ -7,6 +7,13 @@ using Leap.Unity;
 
 public class GrabbingHand : MonoBehaviour
 {
+    // This feels so wrong... :(
+    public Text PinchStrengthText;
+    public Text GrabStrengthText;
+    public Text ConfidenceText;
+
+    public GameObject TowerSet1;
+    private BlockPlacementChecker TowerSet1Script;
 
     public enum PinchState
     {
@@ -45,7 +52,7 @@ public class GrabbingHand : MonoBehaviour
     public float minConfidence = 0.1f;
 
     // Minimum grab strength required for any hold
-    public float minGrabStrength = 0.2f;
+    public float minGrabStrength = 0.1f;
 
     // Minimum pinch strength required for any hold
     public float minPinchStrength = 0.2f;
@@ -74,6 +81,8 @@ public class GrabbingHand : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        TowerSet1Script = TowerSet1.GetComponent<BlockPlacementChecker>();
+
         pinch_state_ = PinchState.kReleased;
         active_object_ = null;
         last_max_angular_velocity_ = 0.0f;
@@ -144,7 +153,7 @@ public class GrabbingHand : MonoBehaviour
 
     protected void StartPinch()
     {
-        // Only pinch if we're hovering over an object.
+        //// Only pinch if we're hovering over an object.
         if (active_object_ == null)
             return;
 
@@ -260,17 +269,21 @@ public class GrabbingHand : MonoBehaviour
         float trigger_distance = proximal_length * grabTriggerDistance;
         float release_distance = proximal_length * releaseTriggerDistance;
 
-
         ///////////// TEST
+        // Only pinch if we're touching an object.
         if (!pinchMode)
         {
-            if (leap_hand.GrabStrength > tightGrabStrength && (closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_))) 
-            {
+            Debug.Log("TowerSet1Script.OneGrabContact()" + TowerSet1Script.OneGrabContact());
+            if (leap_hand.GrabStrength >= minGrabStrength) //This doesn't work and I'm not yet sure why (likely something about the PinchState ordering)
+            if (leap_hand.GrabStrength >= minGrabStrength && (closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_)))
+            //if (leap_hand.GrabStrength >= minGrabStrength && TowerSet1Script.OneGrabContact())
+                {
                 Debug.Log("return PinchState.kPinched;");
                 return PinchState.kPinched;
                 //return PinchState.kReleasing;
             }
-            if (leap_hand.GrabStrength <= tightGrabStrength && leap_hand.GrabStrength > minGrabStrength)
+            //if (leap_hand.GrabStrength < tightGrabStrength && leap_hand.GrabStrength > minGrabStrength)
+            if (leap_hand.GrabStrength < tightGrabStrength && leap_hand.GrabStrength > minGrabStrength && TowerSet1Script.OneGrabContact())
             {
                 //return PinchState.kReleasing;
                 Debug.Log(" return PinchState.kReleasing;");
@@ -281,12 +294,12 @@ public class GrabbingHand : MonoBehaviour
         }
         else
         {
-            if (leap_hand.PinchStrength > tightPinchStrength)
+            if (leap_hand.PinchStrength >= minPinchStrength && TowerSet1Script.OnePinchContact())
             {
                 return PinchState.kPinched;
                 //return PinchState.kReleasing;
             }
-            if (leap_hand.PinchStrength <= tightPinchStrength && leap_hand.PinchStrength > minPinchStrength)
+            if (leap_hand.PinchStrength < tightPinchStrength && leap_hand.PinchStrength > minPinchStrength && (closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_)))
             {
                 //return PinchState.kReleasing;
                 return PinchState.kReleasing;
@@ -294,11 +307,6 @@ public class GrabbingHand : MonoBehaviour
             // return PinchState.kReleasing;
             return PinchState.kReleased;
         }
-
-
-        
-
-
         ////////////
 
 
@@ -348,11 +356,15 @@ public class GrabbingHand : MonoBehaviour
     protected void UpdatePinchPosition()
     {
         HandModel hand_model = GetComponent<HandModel>();
+      //  current_pinch_position_ = 0.5f * (hand_model.fingers[0].GetTipPosition() +
+     //                             hand_model.fingers[1].GetTipPosition());
+
         current_pinch_position_ = 0.5f * (hand_model.fingers[0].GetTipPosition() +
                                           hand_model.fingers[1].GetTipPosition());
 
         Vector3 delta_pinch = current_pinch_position_ - filtered_pinch_position_;
         filtered_pinch_position_ += (1.0f - positionFiltering) * delta_pinch;
+        //Debug.Log("0.5f * (hand_model.fingers[0].GetTipPosition() + hand_model.fingers[1].GetTipPosition())" + 0.5f * (hand_model.fingers[0].GetTipPosition() + hand_model.fingers[1].GetTipPosition()));
     }
 
     protected void UpdatePalmRotation()
@@ -377,27 +389,42 @@ public class GrabbingHand : MonoBehaviour
     {
         Quaternion target_rotation = palm_rotation_ * rotation_from_palm_;
 
+
+
         Vector3 target_position = filtered_pinch_position_ + target_rotation * object_pinch_offset_;
         target_position.x = Mathf.Clamp(target_position.x, minMovement.x, maxMovement.x);
         target_position.y = Mathf.Clamp(target_position.y, minMovement.y, maxMovement.y);
         target_position.z = Mathf.Clamp(target_position.z, minMovement.z, maxMovement.z);
-        Vector3 velocity = (target_position - active_object_.transform.position) / Time.deltaTime;
-        active_object_.GetComponent<Rigidbody>().velocity = velocity;
+        try {
+            Vector3 velocity = (target_position - active_object_.transform.position) / Time.deltaTime;
+            active_object_.GetComponent<Rigidbody>().velocity = velocity;
 
-        Quaternion delta_rotation = target_rotation *
-                                    Quaternion.Inverse(active_object_.transform.rotation);
+            Quaternion delta_rotation = target_rotation *
+                                        Quaternion.Inverse(active_object_.transform.rotation);
 
-        float angle = 0.0f;
-        Vector3 axis = Vector3.zero;
-        delta_rotation.ToAngleAxis(out angle, out axis);
+            float angle = 0.0f;
+            Vector3 axis = Vector3.zero;
+            delta_rotation.ToAngleAxis(out angle, out axis);
 
-        if (angle >= 180)
-        {
-            angle = 360 - angle;
-            axis = -axis;
+            if (angle >= 180)
+            {
+                angle = 360 - angle;
+                axis = -axis;
+            }
+            if (angle != 0)
+                active_object_.GetComponent<Rigidbody>().angularVelocity = angle * axis;
         }
-        if (angle != 0)
-            active_object_.GetComponent<Rigidbody>().angularVelocity = angle * axis;
+        catch
+        {
+            Debug.Log("MOST LIKELY A NULL POINTER EXCEPTION");
+            Debug.Log("filtered_pinch_position_" + filtered_pinch_position_);
+            Debug.Log("target_rotation" + target_rotation);
+            Debug.Log("object_pinch_offset_" + object_pinch_offset_);
+
+            Debug.Log("target_position" + target_position);
+            Debug.Log("active_object_" + active_object_);
+            //Debug.Log("active_object_.transform.position" + active_object_.transform.position);
+        }
     }
 
     // If we are releasing the object only apply a weaker force to the object
@@ -425,12 +452,21 @@ public class GrabbingHand : MonoBehaviour
                                            ForceMode.Acceleration);
     }
 
+    void setOutputStream(Hand leap_hand)
+    {
+        PinchStrengthText.text = "Pinch Strength: " + leap_hand.PinchStrength.ToString();
+        GrabStrengthText.text = "Grab Strength: " + leap_hand.GrabStrength.ToString();
+        ConfidenceText.text = "Confidence: " + leap_hand.Confidence.ToString();
+    }
+
     void FixedUpdate()
     {
         UpdatePalmRotation();
         UpdatePinchPosition();
         HandModel hand_model = GetComponent<HandModel>();
         Hand leap_hand = hand_model.GetLeapHand();
+
+        setOutputStream(leap_hand);
 
         if (leap_hand == null)
             return;
@@ -439,14 +475,15 @@ public class GrabbingHand : MonoBehaviour
         {
             OnRelease();
         }
-        Debug.Log("PinchState new_pinch_state = GetNewPinchState();");
+        //Debug.Log("PinchState new_pinch_state = GetNewPinchState();");
         PinchState new_pinch_state = GetNewPinchState();
         if (pinch_state_ == PinchState.kPinched)
         {
             if (new_pinch_state == PinchState.kReleased)
                 OnRelease();
             else if (active_object_ != null)
-                ContinueHardPinch();
+                Debug.Log("ContinueHardPinch();");
+            ContinueHardPinch();
         }
         else if (pinch_state_ == PinchState.kReleasing)
         {

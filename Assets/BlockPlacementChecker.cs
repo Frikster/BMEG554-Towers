@@ -25,7 +25,21 @@ public class BlockPlacementChecker : MonoBehaviour {
 
     public bool AllBlocksCorrectlyPlaced()
     {
+        Debug.Log("trigSmall.BlockCorrectlyPlaced()"+ trigSmall.BlockCorrectlyPlaced());
+        Debug.Log("trigMid.BlockCorrectlyPlaced()"+ trigMid.BlockCorrectlyPlaced());
+        Debug.Log("trigBig.BlockCorrectlyPlaced()"+ trigBig.BlockCorrectlyPlaced());
         return trigSmall.BlockCorrectlyPlaced() && trigMid.BlockCorrectlyPlaced() && trigBig.BlockCorrectlyPlaced();
+    }
+
+    public bool OneGrabContact()
+    {
+        //return trigMid.GrabContact();
+        return trigSmall.GrabContact() || trigMid.GrabContact() || trigBig.GrabContact();
+    }
+
+    public bool OnePinchContact()
+    {
+        return trigSmall.PinchContact() || trigMid.PinchContact() || trigBig.PinchContact();
     }
 
     // Update is called once per frame

@@ -29,7 +29,7 @@ public class ButtonControl : MonoBehaviour
     {
         if(col.gameObject.name != "Plane")
         {
-            Debug.Log("TRIGGER BUTTON");
+            //Debug.Log("TRIGGER BUTTON");
             if (resetButton)
             {
                 resetButton = false;
@@ -54,7 +54,7 @@ public class ButtonControl : MonoBehaviour
 
     public void KinematicSwitch(GameObject gameObject, bool flag)
     {
-        Debug.Log("gameObject in KinematicSwitch: " + gameObject);
+        //Debug.Log("gameObject in KinematicSwitch: " + gameObject);
         Rigidbody[] rigidbodies = gameObject.GetComponentsInChildren<Rigidbody>();
         foreach (Rigidbody body in rigidbodies)
         {

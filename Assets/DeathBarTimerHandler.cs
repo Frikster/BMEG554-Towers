@@ -33,7 +33,6 @@ public class DeathBarTimerHandler : MonoBehaviour {
         InstructionObject = GameObject.FindGameObjectWithTag("Instructions");
         Instructions = InstructionObject.GetComponent<Text>();
         okButton = GameObject.FindGameObjectWithTag("Button");
-        Debug.Log("TowerSets" + TowerSets);
         TowerChildrenScripts = TowerSets.GetComponentsInChildren<BlockPlacementChecker>();
         ButtonObject = GameObject.FindGameObjectWithTag("Button");
         buttonControl = ButtonObject.GetComponent<ButtonControl>();

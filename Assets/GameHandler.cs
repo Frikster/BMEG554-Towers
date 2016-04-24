@@ -75,7 +75,7 @@ namespace Leap.Unity
             {
                 instructionGrabOrPinch = instructionGrab;
             }
-            Debug.Log("Instructions: " + Instructions.text);
+            //Debug.Log("Instructions: " + Instructions.text);
             Instructions.text = instructionStart + " " + instructionHandedness + " " + instructionGrabOrPinch;
         }
 
@@ -153,13 +153,13 @@ namespace Leap.Unity
 
                 if (InstructionObject.activeSelf && okButton.activeSelf)
                 {
-                    Debug.Log("RIGIFY RIGHT");
+                    //Debug.Log("RIGIFY RIGHT");
                     CollisionsSwitch(rightHandPhysics, true);
                 }
                 else
                 {
-                    Debug.Log("DERIGIFY RIGHT");
-                    CollisionsSwitch(rightHandPhysics, false);
+                    //Debug.Log("DERIGIFY RIGHT");
+                    //CollisionsSwitch(rightHandPhysics, false);
                 }           
                 GrabbingHand grabAndPinchScript = rightHandPhysics.GetComponent<GrabbingHand>();
                 grabAndPinchScript.enabled = true;
@@ -178,13 +178,13 @@ namespace Leap.Unity
                 leftHandPhysics = GameObject.FindGameObjectWithTag("Left");
                 if (InstructionObject.activeSelf && okButton.activeSelf)
                 {
-                    Debug.Log("RIGIFY LEFT");
+                    //Debug.Log("RIGIFY LEFT");
                     CollisionsSwitch(leftHandPhysics, true);
                 }
                 else
                 {
-                    Debug.Log("DERIGIFY LEFT");
-                    CollisionsSwitch(leftHandPhysics, false);
+                    //Debug.Log("DERIGIFY LEFT");
+                    //CollisionsSwitch(leftHandPhysics, false);
                 }
                 GrabbingHand grabAndPinchScript = leftHandPhysics.GetComponent<GrabbingHand>();
                 grabAndPinchScript.enabled = true;
@@ -202,7 +202,7 @@ namespace Leap.Unity
             {
                 if (Input.GetKeyUp(KeyCode.Keypad1))
                 {
-                    Debug.Log("KEYPAD1 " + caseSwitchHandedness);
+                    //Debug.Log("KEYPAD1 " + caseSwitchHandedness);
                     if (caseSwitchHandedness == 3)
                     {
                         caseSwitchHandedness = 1;
