@@ -10,6 +10,8 @@ public class ButtonControl : MonoBehaviour
     private GameObject InstructionObject;
     private Text Instructions;
     private GameObject okButton;
+    private GameObject previousButton;
+    private GameObject nextButton;
 
     private bool resetButton = false;
 
@@ -23,6 +25,8 @@ public class ButtonControl : MonoBehaviour
         InstructionObject = GameObject.FindGameObjectWithTag("Instructions");
         Instructions = InstructionObject.GetComponent<Text>();
         okButton = GameObject.FindGameObjectWithTag("Button");
+        previousButton = GameObject.FindGameObjectWithTag("PreviousButton");
+        nextButton = GameObject.FindGameObjectWithTag("NextButton");
     }
 
     void OnTriggerEnter(Collider col)
@@ -38,6 +42,8 @@ public class ButtonControl : MonoBehaviour
             DeathTimerBar.enabled = true;
             Instructions.enabled = false;
             okButton.SetActive(false);
+            previousButton.SetActive(false);
+            nextButton.SetActive(false);
             KinematicSwitch(TowerSets, false);
         }
     }

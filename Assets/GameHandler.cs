@@ -2,6 +2,8 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+
 
 namespace Leap.Unity
 {
@@ -28,11 +30,11 @@ namespace Leap.Unity
 
         private RigidHand rigidHandScript;
 
-        private string instructionStart = "Please make 2 towers on the green plane";
+        private string instructionStart = "Please make a tower on the green plane before time runs out";
         private string instructionLeft = "using only your left hand";
         private string instructionRight = "using only your right hand";
-        private string instructionPinch = "and only your pointing finger and thumb";
-        private string instructionGrab = "without using your thumb";
+        private string instructionPinch = "and using only your pointing finger and thumb";
+        private string instructionGrab = "and using all four fingers";
 
         private string instructionHandedness;
         private string instructionGrabOrPinch;
@@ -49,8 +51,15 @@ namespace Leap.Unity
         //private BlockPlacementChecker[] TowerChildrenScripts;
 
         public GameObject TowerSets;
-
         private bool resetOnce = true;
+        private bool greenOnLeft = true;
+
+        public GameObject GrabTowerSet;
+        public GameObject PinchTowerSet;
+        private BlockPlacementChecker GrabTowerSetPlacementChecker;
+        private BlockPlacementChecker PinchTowerSetPlacementChecker;
+
+        public string SceneName;
 
         protected void UpdateInstructions()
         {
@@ -105,7 +114,8 @@ namespace Leap.Unity
 
             KinematicSwitch(TowerSets, true);
 
-            //TowerChildrenScripts = TowerSets.GetComponentsInChildren<BlockPlacementChecker>();
+            GrabTowerSetPlacementChecker = GrabTowerSet.GetComponent<BlockPlacementChecker>();
+            PinchTowerSetPlacementChecker = PinchTowerSet.GetComponent<BlockPlacementChecker>();
         }
 
         protected void UpdateHand(GameObject handPhysics, Hand hand)
@@ -137,11 +147,19 @@ namespace Leap.Unity
         // Update is called once per frame
         void Update()
         {
+            if (Input.GetKeyUp(KeyCode.Space))
+            {
+                UnityEngine.VR.InputTracking.Recenter();
+            }
+
             if (InstructionObject.activeSelf && okButton.activeSelf)
             {
                 if (Input.GetKeyUp(KeyCode.Keypad2))
                 {
                     pinchMode = !pinchMode;
+                    GrabTowerSet.SetActive(!GrabTowerSet.activeSelf);
+                    PinchTowerSet.SetActive(!PinchTowerSet.activeSelf);
+                    KinematicSwitch(TowerSets, true);
                     //Debug.Log("pinchMode = " + pinchMode);
                 }
             }
@@ -215,13 +233,10 @@ namespace Leap.Unity
 
                 if (Input.GetKeyUp(KeyCode.Keypad3))
                 {
-
-                    camera = GameObject.FindGameObjectWithTag("MainCamera");
-                    Debug.Log("camera: " + camera);
-                    camera.transform.Rotate(0, 180, 0, Space.World);
-                    // Please see Grabbing
-                    //Debug.Log(grabAndPinchScript);
-                    //grabAndPinchScript.enabled = !grabAndPinchScript.enabled;
+                    RotateVew();
+        // Please see Grabbing
+        //Debug.Log(grabAndPinchScript);
+        //grabAndPinchScript.enabled = !grabAndPinchScript.enabled;
                 }
             }
 
@@ -235,8 +250,10 @@ namespace Leap.Unity
             {
                 if (resetOnce)
                 {
-                    leap_controller_.StopConnection();
-                    leap_controller_.StartConnection();
+                    Debug.Log("RESET!!!");
+                    //Not needed after discovering handedness can be set directly in Unity
+                    //leap_controller_.StopConnection();
+                    //leap_controller_.StartConnection();
                     resetOnce = false;
                 }
             }
@@ -264,6 +281,22 @@ namespace Leap.Unity
         //    }
         //}
 
+private void RotateVew()
+        {
+            camera = GameObject.FindGameObjectWithTag("MainCamera");
+            camera.transform.Rotate(0, 180, 0, Space.World);
+            if (greenOnLeft)
+            {
+                camera.transform.position = new Vector3(0, 0.1f, 0.4f);
+            }
+            else
+            {
+                camera.transform.position = new Vector3(0, 0.1f, 0.1f);
+            }
+            greenOnLeft = !greenOnLeft;
+
+        }
+
 
 public void CollisionsSwitch(GameObject gameObject, bool flag)
         {
@@ -282,6 +315,40 @@ public void KinematicSwitch(GameObject gameObject, bool flag)
             foreach (Rigidbody body in rigidbodies)
             {
                 body.isKinematic = flag;
+            }
+        }
+
+public void setRules(int[] arr)
+        {
+            //Debug.Log("arr " + arr);
+            // Debug.Log("arr.Length " + arr.Length);
+            // index 1 - handedness
+            // index 0 - pinch/grab
+            // index 2 - forward/backwards
+
+            //SceneManager.LoadScene(SceneName);
+
+
+            caseSwitchHandedness = arr[1]+1;
+            if (arr[0]==0)
+            {
+                pinchMode = false;
+                GrabTowerSet.SetActive(true);
+                PinchTowerSet.SetActive(false);
+                KinematicSwitch(TowerSets, true);
+            }
+            else
+            {
+                pinchMode = true;
+                GrabTowerSet.SetActive(false);
+                PinchTowerSet.SetActive(true);
+                KinematicSwitch(TowerSets, true);
+            }
+            TowerSets.SetActive(false);
+            TowerSets.SetActive(true);
+            if ((greenOnLeft&& arr[2] == 1) || (!greenOnLeft && arr[2] == 0))
+            {
+                RotateVew();
             }
         }
     }

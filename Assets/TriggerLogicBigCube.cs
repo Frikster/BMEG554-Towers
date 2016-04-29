@@ -28,6 +28,28 @@ public class TriggerLogicBigCube : MonoBehaviour
     private bool contactMidBone3_R = false;
     private bool contactPinkyBone3_R = false;
     private bool contactRingBone3_R = false;
+
+    private bool stickified = false;
+
+    void Update()
+    {
+        if ((FingerTipContact()) && touchingGreen)
+        //if (touchingGreen)
+        {
+            stickified = true;
+        }
+        else
+        {
+          stickified = false;
+        }
+
+    }
+
+    public bool Stickified()
+    {
+        return stickified;
+    }
+
     // Use this for initialization
     void OnTriggerStay(Collider other)
     {
@@ -146,8 +168,7 @@ public class TriggerLogicBigCube : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        //Debug.Log("OnTriggerStay");
-        //Debug.Log(other.gameObject.tag + " " + other.gameObject);
+        //Debug.Log("BIGCUBE other " + other.gameObject.tag + " " + other.gameObject);
         if (other.gameObject.CompareTag("Finish"))
         {
             touchingGreen = true;
@@ -250,7 +271,7 @@ public class TriggerLogicBigCube : MonoBehaviour
             contactRingBone3_R = true;
         }
 
-        //Debug.Log("OTHER" + other);
+        //Debug.Log("BIG touchingGreen" + touchingGreen);
     }
 
     public bool BlockCorrectlyPlaced()
@@ -266,7 +287,20 @@ public class TriggerLogicBigCube : MonoBehaviour
 
     public bool PinchContact()
     {
-        return (contactThumbBone1_L && contactIndexBone1_L && !contactMidBone1_L && !contactPinkyBone1_L && !contactRingBone1_L && !contactPalm_L)
-    || (contactThumbBone1_R && contactIndexBone1_R && !contactMidBone1_R && !contactPinkyBone1_R && !contactRingBone1_R && !contactPalm_R);
+        //return (contactThumbBone3_L && contactIndexBone3_L)|| (contactThumbBone3_R && contactIndexBone3_R);
+        //Debug.Log("contactThumbBone3_L "+ contactThumbBone3_L);
+        //Debug.Log("contactIndexBone3_L "+ contactIndexBone3_L);
+        //Debug.Log("contactMidBone3_L "+ contactMidBone3_L);
+        //Debug.Log("contactPinkyBone3_L "+ contactPinkyBone3_L);
+        //Debug.Log("contactRingBone3_L "+ contactRingBone3_L);
+        //Debug.Log("contactPalm_L "+ contactPalm_L);
+        return (contactThumbBone3_L && contactIndexBone3_L && !contactMidBone3_L && !contactPinkyBone3_L && !contactRingBone3_L && !contactPalm_L)
+    || (contactThumbBone3_R && contactIndexBone3_R && !contactMidBone3_R && !contactPinkyBone3_R && !contactRingBone3_R && !contactPalm_R);
+    }
+
+    public bool FingerTipContact()
+    {
+        return (contactThumbBone3_L || contactIndexBone3_L || contactMidBone3_L || contactPinkyBone3_L || contactRingBone3_L)
+    || (contactThumbBone3_R || contactIndexBone3_R || contactMidBone3_R || contactPinkyBone3_R || contactRingBone3_R);
     }
 }

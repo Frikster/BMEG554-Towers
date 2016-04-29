@@ -34,6 +34,13 @@ TagManager:
   - MidBone3_R
   - PinkyBone3_R
   - RingBone3_R
+  - NextButton
+  - PreviousButton
+  - SurfaceCanvas
+  - MidBlock
+  - BigBlock
+  - SmallBlock
+  - ButtonText
   layers:
   - Default
   - TransparentFX
@@ -45,7 +52,7 @@ TagManager:
   - 
   - Player
   - Trigger
-  - 
+  - SurfaceCanvas
   - 
   - 
   - 

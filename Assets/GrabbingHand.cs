@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using Leap;
@@ -12,8 +13,14 @@ public class GrabbingHand : MonoBehaviour
     public Text GrabStrengthText;
     public Text ConfidenceText;
 
-    public GameObject TowerSet1;
-    private BlockPlacementChecker TowerSet1Script;
+    public GameObject GrabTowerSet;
+    public GameObject PinchTowerSet;
+    private BlockPlacementChecker GrabTowerSetScript;
+    private BlockPlacementChecker PinchTowerSetScript;
+
+    //private GameObject controllerGameObject;
+    //private LeapServiceProvider leapServiceProviderScript;
+    //protected Controller leap_controller_;
 
     public enum PinchState
     {
@@ -53,15 +60,20 @@ public class GrabbingHand : MonoBehaviour
 
     // Minimum grab strength required for any hold
     public float minGrabStrength = 0.1f;
+    private float minGrabStrengthMemory;
+
+    //Minimum grab strength needed to pick up a block after they contact each other
+    //public float stickifyGrabStrength = 0.8f;
 
     // Minimum pinch strength required for any hold
     public float minPinchStrength = 0.2f;
+    private float minPinchStrengthMemory;
 
     // Minimum grab strength required for tight hold
     public float tightGrabStrength = 0.8f;
 
     // Minimum pinch strength required for tight hold
-    public float tightPinchStrength = 0.8f;
+    public float tightPinchStrength = 0.9f;
 
     // Clamps the movement of the grabbed object.
     public Vector3 maxMovement = new Vector3(Mathf.Infinity, Mathf.Infinity, Mathf.Infinity);
@@ -81,7 +93,11 @@ public class GrabbingHand : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        TowerSet1Script = TowerSet1.GetComponent<BlockPlacementChecker>();
+        minGrabStrengthMemory = minGrabStrength;
+        minPinchStrengthMemory = minPinchStrength;
+        GrabTowerSetScript = GrabTowerSet.GetComponent<BlockPlacementChecker>();
+        PinchTowerSetScript = PinchTowerSet.GetComponent<BlockPlacementChecker>();
+        //Debug.Log("PinchTowerSetScript " + PinchTowerSetScript);
 
         pinch_state_ = PinchState.kReleased;
         active_object_ = null;
@@ -91,6 +107,10 @@ public class GrabbingHand : MonoBehaviour
         filtered_pinch_position_ = Vector3.zero;
         object_pinch_offset_ = Vector3.zero;
         palm_rotation_ = Quaternion.identity;
+
+        //controllerGameObject = GameObject.FindGameObjectWithTag("GameController");
+        //leapServiceProviderScript = controllerGameObject.GetComponent<LeapServiceProvider>();
+        //                                         leap_controller_ = leapServiceProviderScript.GetLeapController();
     }
 
     void OnDestroy()
@@ -269,42 +289,74 @@ public class GrabbingHand : MonoBehaviour
         float trigger_distance = proximal_length * grabTriggerDistance;
         float release_distance = proximal_length * releaseTriggerDistance;
 
-        ///////////// TEST
+        ///////////// IMPORTANT
         // Only pinch if we're touching an object.
+
         if (!pinchMode)
         {
-            Debug.Log("TowerSet1Script.OneGrabContact()" + TowerSet1Script.OneGrabContact());
-            if (leap_hand.GrabStrength >= minGrabStrength) //This doesn't work and I'm not yet sure why (likely something about the PinchState ordering)
-            if (leap_hand.GrabStrength >= minGrabStrength && (closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_)))
-            //if (leap_hand.GrabStrength >= minGrabStrength && TowerSet1Script.OneGrabContact())
-                {
-                Debug.Log("return PinchState.kPinched;");
-                return PinchState.kPinched;
-                //return PinchState.kReleasing;
-            }
-            //if (leap_hand.GrabStrength < tightGrabStrength && leap_hand.GrabStrength > minGrabStrength)
-            if (leap_hand.GrabStrength < tightGrabStrength && leap_hand.GrabStrength > minGrabStrength && TowerSet1Script.OneGrabContact())
+            if (GrabTowerSetScript.OneStickifyRequest())
             {
-                //return PinchState.kReleasing;
+                //throw new Exception("BOOM!");
+                minGrabStrength = tightGrabStrength;
+            }
+            else
+            {
+                minGrabStrength = minGrabStrengthMemory;
+            }
+        }
+        else
+        {        
+            if (PinchTowerSetScript.OneStickifyRequest())
+            {
+                //throw new Exception("BOOM!");
+                minPinchStrength = tightPinchStrength;
+            }
+            else
+            {
+                minPinchStrength = minPinchStrengthMemory;
+            }          
+        }
+
+
+        Debug.Log("minGrabStrength " + minGrabStrength);
+        Debug.Log("minPinchStrength " + minPinchStrength);
+        //if (minGrabStrength == 1.0f)
+        // {
+        //    throw new Exception("BOOM!");
+        // }
+
+        if (!pinchMode)
+        {
+            //Debug.Log("GrabTowerSetScript.OneGrabContact()" + GrabTowerSetScript.OneGrabContact());
+          //if (leap_hand.GrabStrength >= minGrabStrength) //This doesn't work and I'm not yet sure why (likely something about the PinchState ordering)
+            if (leap_hand.GrabStrength >= minGrabStrength && (closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_)))
+          //if (leap_hand.GrabStrength >= minGrabStrength && GrabTowerSetScript.OneGrabContact())
+                {
+                    Debug.Log("return PinchState.kPinched;");
+                    return PinchState.kPinched;
+            }
+          //if (leap_hand.GrabStrength < tightGrabStrength && leap_hand.GrabStrength > minGrabStrength)
+            if (leap_hand.GrabStrength < tightGrabStrength && leap_hand.GrabStrength > minGrabStrength && GrabTowerSetScript.OneGrabContact())
+            {
                 Debug.Log(" return PinchState.kReleasing;");
                 return PinchState.kReleasing;
             }
-            // return PinchState.kReleasing;
             return PinchState.kReleased;
         }
         else
         {
-            if (leap_hand.PinchStrength >= minPinchStrength && TowerSet1Script.OnePinchContact())
+            //if (leap_hand.PinchStrength >= minPinchStrength && PinchTowerSetScript.OnePinchContact())
+            if (leap_hand.PinchStrength >= minPinchStrength && (closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_)))
             {
                 return PinchState.kPinched;
-                //return PinchState.kReleasing;
             }
-            if (leap_hand.PinchStrength < tightPinchStrength && leap_hand.PinchStrength > minPinchStrength && (closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_)))
+            //if ((closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_)))
+            //if (leap_hand.PinchStrength < tightPinchStrength && leap_hand.PinchStrength > minPinchStrength && (closest_distance <= release_distance && pinch_state_ != PinchState.kReleased && !ObjectReleaseBreak(current_pinch_position_)))
+            if (leap_hand.PinchStrength < tightPinchStrength && leap_hand.PinchStrength > minPinchStrength && PinchTowerSetScript.OnePinchContact())
             {
-                //return PinchState.kReleasing;
                 return PinchState.kReleasing;
+                //return PinchState.kPinched;
             }
-            // return PinchState.kReleasing;
             return PinchState.kReleased;
         }
         ////////////

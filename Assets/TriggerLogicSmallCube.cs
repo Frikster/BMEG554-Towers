@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+//namespace Leap.Unity
+//{
 public class TriggerLogicSmallCube : MonoBehaviour {
     private bool touchingGreen = false;
     private bool touchingMidBlock = false;
@@ -29,13 +31,49 @@ public class TriggerLogicSmallCube : MonoBehaviour {
     private bool contactPinkyBone3_R = false;
     private bool contactRingBone3_R = false;
 
+    private GrabbingHand grabbingHandLeft;
+    private GrabbingHand grabbingHandRight;
+    private GameObject leftHand;
+    private GameObject rightHand;
+
+    private float unstickifyGrab;
+    private float unstickifyPinch;
+    private bool stickified = false;
+
     public GameObject smallObj;
+
+    //Leap controller
+    //private GameObject controllerGameObject;
+    //private LeapServiceProvider leapServiceProviderScript;
+    //protected Controller leap_controller_;
+
     void start()
     {
-        // This function wont execute for some reason
-        Debug.Log("smallObj" + smallObj);
         smallObj = this.transform.parent.gameObject;
+        //controllerGameObject = GameObject.FindGameObjectWithTag("GameController");
+        //leapServiceProviderScript = controllerGameObject.GetComponent<LeapServiceProvider>();
+        //leap_controller_ = leapServiceProviderScript.GetLeapController();
     }
+
+    void Update()
+    {
+        if (FingerTipContact() && touchingMidBlock && !touchingGreen)
+        //if (touchingMidBlock && !touchingGreen)
+        {
+            stickified = true;
+        }
+        else
+        {
+                stickified = false;
+        }
+
+    }
+
+    public bool Stickified()
+    {
+        return stickified;
+    }
+
     // Use this for initialization
     void OnTriggerStay(Collider other)
     {
@@ -48,7 +86,7 @@ public class TriggerLogicSmallCube : MonoBehaviour {
         //Debug.Log("OnTriggerExit");
         //Debug.Log("OnTriggerStay");
         //Debug.Log(other.gameObject.tag + " " + other.gameObject);
-        if (other.gameObject.CompareTag("Mid"))
+        if (other.gameObject.CompareTag("MidBlock"))
         {
             touchingMidBlock = false;
         }
@@ -150,17 +188,13 @@ public class TriggerLogicSmallCube : MonoBehaviour {
         {
             contactRingBone3_R = false;
         }
-
-        //Debug.Log("Small BlockCorrectlyPlaced() " + BlockCorrectlyPlaced());
-        //Debug.Log("Small touchingMidBlock " + touchingMidBlock);
-        //Debug.Log("Small touchingGreen " + touchingGreen);
     }
 
     void OnTriggerEnter(Collider other)
     {
         //Debug.Log("OnTriggerStay");
         //Debug.Log(other.gameObject.tag + " " + other.gameObject);
-        if (other.gameObject.CompareTag("Mid"))
+        if (other.gameObject.CompareTag("MidBlock"))
         {
             touchingMidBlock = true;
         }
@@ -272,22 +306,31 @@ public class TriggerLogicSmallCube : MonoBehaviour {
     public bool BlockCorrectlyPlaced()
     {
         //return false;
-        //Debug.Log("smallObj.GetComponent<Rigidbody>()"+smallObj.GetComponent<Rigidbody>());
+        //Debug.Log("smallObj.GetComponent<Rigidbody>()" + smallObj.GetComponent<Rigidbody>());
+        //Debug.Log("Small touchingMidBlock " + touchingMidBlock);
+        //Debug.Log("Small touchingGreen " + touchingGreen);
         return !touchingGreen && touchingMidBlock && smallObj.GetComponent<Rigidbody>().IsSleeping();
     }
 
     public bool GrabContact()
     {
-        return (contactIndexBone1_L && contactMidBone1_L && contactPinkyBone1_L && contactRingBone1_L)
-            || (contactIndexBone1_R && contactMidBone1_R && contactPinkyBone1_R && contactRingBone1_R)
-            || (contactIndexBone3_L && contactMidBone3_L && contactPinkyBone3_L && contactRingBone3_L)
-            || (contactIndexBone3_R && contactMidBone3_R && contactPinkyBone3_R && contactRingBone3_R);
+        return (contactMidBone1_L && contactPinkyBone1_L && contactRingBone1_L)
+            || (contactMidBone1_R && contactPinkyBone1_R && contactRingBone1_R)
+            || (contactMidBone3_L && contactPinkyBone3_L && contactRingBone3_L)
+            || (contactMidBone3_R && contactPinkyBone3_R && contactRingBone3_R);
     }
 
     public bool PinchContact()
     {
-        return (contactThumbBone1_L && contactIndexBone1_L && !contactMidBone1_L && !contactPinkyBone1_L && !contactRingBone1_L && !contactPalm_L)
-    || (contactThumbBone1_R && contactIndexBone1_R && !contactMidBone1_R && !contactPinkyBone1_R && !contactRingBone1_R && !contactPalm_R);
+        return (contactThumbBone3_L && contactIndexBone3_L && !contactMidBone3_L && !contactPinkyBone3_L && !contactRingBone3_L && !contactPalm_L)
+    || (contactThumbBone3_R && contactIndexBone3_R && !contactMidBone3_R && !contactPinkyBone3_R && !contactRingBone3_R && !contactPalm_R);
+    }
+
+    public bool FingerTipContact()
+    {
+        return (contactThumbBone3_L || contactIndexBone3_L || contactMidBone3_L || contactPinkyBone3_L || contactRingBone3_L)
+    || (contactThumbBone3_R || contactIndexBone3_R || contactMidBone3_R || contactPinkyBone3_R || contactRingBone3_R);
     }
 }
 
+//}

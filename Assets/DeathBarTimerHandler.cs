@@ -28,12 +28,18 @@ public class DeathBarTimerHandler : MonoBehaviour {
     private LeapServiceProvider leapServiceProviderScript;
     //protected Controller leap_controller_;
 
+    private GameObject ButtonText;
+    private GameObject Surface;
+    private GameHandler gameHandler;
+
     // Use this for initialization
     void Start () {
+        //Debug.Log("Run DeathBarTimerHandler start()");
+
         InstructionObject = GameObject.FindGameObjectWithTag("Instructions");
         Instructions = InstructionObject.GetComponent<Text>();
         okButton = GameObject.FindGameObjectWithTag("Button");
-        TowerChildrenScripts = TowerSets.GetComponentsInChildren<BlockPlacementChecker>();
+        //TowerChildrenScripts = TowerSets.GetComponentsInChildren<BlockPlacementChecker>();
         ButtonObject = GameObject.FindGameObjectWithTag("Button");
         buttonControl = ButtonObject.GetComponent<ButtonControl>();
         leftHandPhysics = GameObject.FindGameObjectWithTag("Left");
@@ -42,10 +48,19 @@ public class DeathBarTimerHandler : MonoBehaviour {
         controllerGameObject = GameObject.FindGameObjectWithTag("GameController");
         leapServiceProviderScript = controllerGameObject.GetComponent<LeapServiceProvider>();
         //leap_controller_ = leapServiceProviderScript.GetLeapController();
+
+        ButtonText = GameObject.FindGameObjectWithTag("ButtonText");
+        Surface = GameObject.FindGameObjectWithTag("SurfaceCanvas");
+        gameHandler = Surface.GetComponent<GameHandler>();
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update () {
+
+        //Debug.Log("Run DeathBarTimerHandler start()");
+        TowerChildrenScripts = TowerSets.GetComponentsInChildren<BlockPlacementChecker>();
+
+
         if (DeathTimerBar.enabled) {
 
             DeathTimerBar.fillAmount -= DecreaseAmount * Time.deltaTime;
@@ -79,6 +94,14 @@ public class DeathBarTimerHandler : MonoBehaviour {
                 Instructions.text = "You Win!";
                 Instructions.enabled = true;
                 okButton.SetActive(true);
+                Surface.transform.position = new Vector3((float)0.0, (float)0.05, (float)0.25);
+
+                //if (gameHandler.greenOnLeft)
+                //{
+                //    Surface.transform.position = new Vector3((float)0.0, (float)0.05, (float)0.25);
+                //}
+
+                ButtonText.GetComponent<Text>().text = "OK";
                 DeathTimerBar.enabled = false;
                 buttonControl.setAsResetButton(true);
                 KinematicSwitch(TowerSets_obj, true);
@@ -86,7 +109,6 @@ public class DeathBarTimerHandler : MonoBehaviour {
                 // leap_controller_.StartConnection();
                 //SceneManager.LoadScene(SceneName);
             }
-
         }
     }
 

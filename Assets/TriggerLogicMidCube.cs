@@ -30,7 +30,107 @@ public class TriggerLogicMidCube : MonoBehaviour
     private bool contactMidBone3_R = false;
     private bool contactPinkyBone3_R = false;
     private bool contactRingBone3_R = false;
+
+    private GrabbingHand grabbingHandLeft;
+    private GrabbingHand grabbingHandRight;
+    private GameObject leftHand;
+    private GameObject rightHand;
+
+    private bool stickified = false;
+
     // Use this for initialization
+    void Start()
+    { 
+
+    }
+
+    void Update()
+    {
+        //if (leftHand == null)
+        //{
+        //    try
+        //    {
+        //        leftHand = GameObject.FindGameObjectWithTag("Left");
+        //        grabbingHandLeft = leftHand.GetComponent<GrabbingHand>();
+        //        unstickifyGrab = grabbingHandLeft.minGrabStrength;
+        //        unstickifyPinch = grabbingHandLeft.minPinchStrength;
+        //        Debug.Log("TRIGGERMID START " + unstickifyGrab);
+        //    }
+        //    catch
+        //    {
+
+        //    }
+        //}
+
+        //if (rightHand == null)
+        //{
+        //    try
+        //    {
+        //        rightHand = GameObject.FindGameObjectWithTag("Right");
+        //        grabbingHandRight = rightHand.GetComponent<GrabbingHand>();
+        //        unstickifyGrab = grabbingHandRight.minGrabStrength;
+        //        unstickifyPinch = grabbingHandRight.minPinchStrength;
+        //        Debug.Log("TRIGGERMID START " + unstickifyGrab);
+        //    }
+        //    catch
+        //    {
+
+        //    }
+        //}
+
+        //Debug.Log("GrabContact() " + GrabContact());
+        //Debug.Log("PinchContact() " + PinchContact());
+        //Debug.Log("FingerTipContact() " + FingerTipContact());
+
+        //Debug.Log("touchingSmallBlock " + touchingSmallBlock);
+        //Debug.Log("touchingSmallBlock " + touchingSmallBlock);
+        //Debug.Log("touchingGreen " + touchingGreen);
+
+        if (FingerTipContact() && (touchingSmallBlock || touchingBigBlock)&&!touchingGreen)
+        {
+            Debug.Log("Sticky");
+            stickified = true;
+        }
+        else
+        {
+            stickified = false;
+        }
+    }
+
+    //private void stickify()
+    //{
+    //    if (grabbingHandLeft != null)
+    //    {
+    //        grabbingHandLeft.minGrabStrength = 1.0f;
+    //        grabbingHandLeft.minPinchStrength = 1.0f;
+    //    }
+    //    if (grabbingHandRight != null)
+    //    {
+    //        grabbingHandRight.minGrabStrength = 1.0f;
+    //        grabbingHandRight.minPinchStrength = 1.0f;
+    //    }
+    //}
+
+    //private void unstickify()
+    //{
+    //    if (grabbingHandLeft != null)
+    //    {
+    //        grabbingHandLeft.minGrabStrength = unstickifyGrab;
+    //        grabbingHandLeft.minPinchStrength = unstickifyPinch;
+    //    }
+    //    if (grabbingHandRight != null)
+    //    {
+    //        grabbingHandRight.minGrabStrength = unstickifyGrab;
+    //        grabbingHandRight.minPinchStrength = unstickifyPinch;
+    //    }
+    //}
+
+    public bool Stickified()
+    {
+        return stickified;
+    }
+
+
     void OnTriggerStay(Collider other)
     {
 
@@ -42,11 +142,11 @@ public class TriggerLogicMidCube : MonoBehaviour
         //Debug.Log("OnTriggerExit");
         //Debug.Log("OnTriggerStay");
         //Debug.Log(other.gameObject.tag + " " + other.gameObject);
-        if (other.gameObject.CompareTag("Big"))
+        if (other.gameObject.CompareTag("BigBlock"))
         {
             touchingBigBlock = false;
         }
-        if (other.gameObject.CompareTag("Small"))
+        if (other.gameObject.CompareTag("SmallBlock"))
         {
             touchingSmallBlock = false;
         }
@@ -158,11 +258,11 @@ public class TriggerLogicMidCube : MonoBehaviour
     {
         //Debug.Log("OnTriggerStay");
         //Debug.Log(other.gameObject.tag + " " + other.gameObject);
-        if (other.gameObject.CompareTag("Big"))
+        if (other.gameObject.CompareTag("BigBlock"))
         {
             touchingBigBlock = true;
         }
-        if (other.gameObject.CompareTag("Small"))
+        if (other.gameObject.CompareTag("SmallBlock"))
         {
             touchingSmallBlock = true;
         }
@@ -273,8 +373,8 @@ public class TriggerLogicMidCube : MonoBehaviour
 
     public bool BlockCorrectlyPlaced()
     {
-        Debug.Log("touchingGreen "+touchingGreen);
-        Debug.Log("touchingBigBlock"+touchingBigBlock);
+        //Debug.Log("touchingGreen "+touchingGreen);
+        //Debug.Log("touchingBigBlock"+touchingBigBlock);
         return !touchingGreen && touchingBigBlock;
     }
 
@@ -286,7 +386,13 @@ public class TriggerLogicMidCube : MonoBehaviour
 
     public bool PinchContact()
     {
-        return (contactThumbBone1_L && contactIndexBone1_L && !contactMidBone1_L && !contactPinkyBone1_L && !contactRingBone1_L && !contactPalm_L)
-    || (contactThumbBone1_R && contactIndexBone1_R && !contactMidBone1_R && !contactPinkyBone1_R && !contactRingBone1_R && !contactPalm_R);
+        return (contactThumbBone3_L && contactIndexBone3_L && !contactMidBone3_L && !contactPinkyBone3_L && !contactRingBone3_L && !contactPalm_L)
+    || (contactThumbBone3_R && contactIndexBone3_R && !contactMidBone3_R && !contactPinkyBone3_R && !contactRingBone3_R && !contactPalm_R);
+    }
+
+    public bool FingerTipContact()
+    {
+        return (contactThumbBone3_L || contactIndexBone3_L || contactMidBone3_L || contactPinkyBone3_L || contactRingBone3_L)
+    || (contactThumbBone3_R || contactIndexBone3_R || contactMidBone3_R || contactPinkyBone3_R || contactRingBone3_R);
     }
 }
